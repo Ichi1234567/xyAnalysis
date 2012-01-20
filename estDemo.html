@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="http://api.urmap.com/udraw/udraw.css" />
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="http://jquery.bassistance.de/treeview/jquery.treeview.js"></script>
-    <script type="text/javascript" src="/mkrMgr.js"></script>
+    <script type="text/javascript" src="/analysis.js"></script>
 
     <!--script type='text/javascript' src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script-->
     <link rel="stylesheet" href="http://jquery.bassistance.de/treeview/jquery.treeview.css" />
@@ -177,7 +177,7 @@
         window.onload = function(){
             $("#pushdata").bind("click", function() {
                 _init();
-                mgr = (!mgr) ? (world({"data": _dataIn})) : (mgr.reset(), mgr.insert(_dataIn));
+                mgr = (!mgr) ? (world({"data":dataIn})) : (mgr.reset(), mgr.insert(_dataIn));
                 _drawOriData();
             });
             $("#buckets").bind("click", function() {
