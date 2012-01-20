@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OVERLAYMANAGER DEMO FOR MARKERS</title>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link rel="stylesheet" type="text/css" href="http://api.urmap.com/udraw/udraw.css" />
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://jquery.bassistance.de/treeview/jquery.treeview.js"></script>
+    <script type="text/javascript" src="/mkrMgr.js"></script>
+
+    <!--script type='text/javascript' src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script-->
+    <link rel="stylesheet" href="http://jquery.bassistance.de/treeview/jquery.treeview.css" />
+    <style>
+    #title {
+        margin-bottom: 27px;
+    }
+    #desc {
+        margin-bottom: 27px;
+    }
+    #map {
+        margin-top: 10px;
+    }
+    
+    div.infoArea {
+        border: 2px solid #666666;
+        padding: 3px;
+        width: 100%;
+        font-size: 18px;
+    }
+
+    /*ul {
+        list-style: none;
+        width: 90%;
+    }*/
+    .clear {
+        content: ".";
+        display: block;
+        /*height: 0;*/
+        clear: both;
+        visibility: hidden;
+    }
+    /* Hides from IE-mac \*/
+    * html #allRecord {height: 1%;}
+    /* End hide from IE-mac */
+    </style>
+</head>
+<body>
+    <!--br/><br/><br/><br/-->
+    <div id="map" style="width:750px; height:600px; border:3px solid #666666;">
+        <canvas id="est" width=750 height=600></canvas>
+    </div>
+    <div style="position:absolute; top:10px; left:57.5%; width:40%">
+        <div class="infoArea">
+            <h3 id="title">MKRMGR CONTROL PANEL</h3>
+            <button id="pushdata">clear & push data</button>
+            <button id="buckets">show buckets</button><br>
+            <hr>
+                scope：<input id="scope" type="text"></input>
+                <textarea id="cond" cols=50 rows=9></textarea><button id="search">search</button><br>
+            <hr>
+            <div id="log">click-region log
+                <ul id="logInf"></ul>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        var mgr;
+        var _canvas = document.getElementById("est");
+        var _ctx = _canvas.getContext("2d");
+        var _r = 3;
+
+        var _dataNum = 1000;
+        var _dataIn = [];
+        var _showCenter = function() {
+            _ctx.fillStyle = "rgb(0, 0, 0)";
+            _ctx.beginPath();
+                _ctx.rect(0, 0, _canvas.width, _canvas.height);
+            _ctx.closePath();
+            _ctx.fill();
+            _ctx.strokeStyle = "rgb(255, 255, 255)";
+            _ctx.beginPath();
+                _ctx.moveTo(375, 0);
+                _ctx.lineTo(375, 600);
+            _ctx.closePath();
+            _ctx.stroke();
+            _ctx.beginPath();
+                _ctx.moveTo(0, 300);
+                _ctx.lineTo(750, 300);
+            _ctx.closePath();
+            _ctx.stroke();
+        };
+        var _drawOriData = function() {
+            _ctx.clearRect(0, 0, _canvas.width, _canvas.height);
+            _showCenter();
+            var _data = mgr.get("data");
+            var _dNum = _data.length
+            //console.log("==========================");
+            for (var i = 0; i < _dNum; i++) {
+                //var q = ((i + 1) / _dNum) * 255;
+                //var r = parseInt(256 / 2 * Math.sin((1 / 256 * q - 0.5 * 1) * Math.PI) + (328 - (256 / 2)));
+                //var g = parseInt(128 * Math.sin((1 / 128 * q - 0.5 * 1) * Math.PI) + (128 - 1));
+                //var b = parseInt(256 * Math.sin((1 / 256 * q + 0.5 * 1) * Math.PI));
+                //var a = 0.9;
+                var _datai = _data[i].oriData;
+                var rgb = "#ffffff"
+                _ctx.fillStyle = rgb;
+                _ctx.beginPath();
+                    _ctx.arc(_datai.x, _datai.y, _r, 0, Math.PI * 2, true);
+                    _ctx.fill();
+                _ctx.closePath();
+            }
+        };
+        var _showBuckets = function(_bucketsInf, opts) {
+            var opts = (!!opts) ? (opts) : ({})
+            if (!opts.notClear) {
+                _ctx.clearRect(0, 0, _canvas.width, _canvas.height);
+                _showCenter();
+            }
+            var _buckets = (!!_bucketsInf) ? (_bucketsInf) : ((!!mgr) ? (mgr.buckets()) : [])
+            //console.log("==========================");
+            var _bckLen = _buckets.length;
+            for (var i = 0; i < _bckLen; i++) {
+                var q = ((i + 1) / _bckLen) * 255;
+                var r = parseInt(256 / 2 * Math.sin((1 / 256 * q - 0.5 * 1) * Math.PI) + (328 - (256 / 2)));
+                var g = parseInt(128 * Math.sin((1 / 128 * q - 0.5 * 1) * Math.PI) + (128 - 1));
+                var b = parseInt(256 * Math.sin((1 / 256 * q + 0.5 * 1) * Math.PI));
+                var a = 0.9;
+                var _data = _buckets[i].vals;
+                var _dataLen = _data.length;
+                var _rgbs = [r, g, b, a];
+                var rgb = (!!opts.rgb) ? ("rgba(" + opts.rgb.join() + ", 0.9)") : ("rgba("+ _rgbs.join() + ")");
+                var grid = _data[0].estVal.grid
+                _ctx.strokeStyle = "rgba(200, 200, 200, 1)";
+                _ctx.beginPath();
+                    _ctx.rect(grid[0] * 20, grid[1] * 20, 20, 20);
+                 _ctx.closePath();
+                _ctx.stroke();
+                //if (i < 10 || (i + 20) >= _bckLen) {
+                //if (i % 4 == 1) {
+                //if (_dataLen > 1){
+                //console.log("========================================");
+                    for (var j = 0; j < _dataLen; j++) {
+                        var _dataj = _data[j].oriData;
+                        _ctx.fillStyle = rgb;
+                        //console.log(_dataj.x + " , " + _dataj.y);
+                        _ctx.beginPath();
+                            _ctx.arc(_dataj.x, _dataj.y, _r, 0, Math.PI * 2, true);
+                            _ctx.fill();
+                        _ctx.closePath();
+                    }
+                //}
+                //if (i == 1)
+                //    break;
+            }
+        };
+        var _init = function() {
+            _dataIn = [];
+            var i;
+            for (i = 0; i < (_dataNum / 1); i++) {
+                var _lat_1 = parseFloat((Math.random() * 750).toFixed(4), 10);
+                var _lng_1 = parseFloat((Math.random() * 600).toFixed(4), 10);
+                //console.log(_lat_i + " , " + _lng_i);
+                _dataIn.push({"x": _lat_1, "y": _lng_1});
+            }
+            //for (i = 0; i < 40; i++) {
+            //    var _lat_2 = parseFloat((Math.random() * 250).toFixed(4), 10) + 350;
+            //    var _lng_2 = parseFloat((Math.random() * 150).toFixed(4), 10) + 100;
+            //    _dataIn.push({"x": _lat_2, "y": _lng_2});
+            //}
+            //for (i = 0; i < 60; i++) {
+            //    var _lat_3 = parseFloat((Math.random() * 150).toFixed(4), 10) + 50;
+            //    var _lng_3 = parseFloat((Math.random() * 250).toFixed(4), 10) + 300;
+            //    _dataIn.push({"x": _lat_3, "y": _lng_3});
+            //}
+        };
+        window.onload = function(){
+            $("#pushdata").bind("click", function() {
+                _init();
+                mgr = (!mgr) ? (world({"data": _dataIn})) : (mgr.reset(), mgr.insert(_dataIn));
+                _drawOriData();
+            });
+            $("#buckets").bind("click", function() {
+                _showBuckets();
+            });
+            $("#search").bind("click", function() {
+                _cond = $("#cond")
+                _condVal = _cond.val()
+                _scope = $("#scope")
+                _scopeVal = _scope.val()
+                if (!!mgr) {
+                    _result = mgr.search(_scopeVal, _condVal)
+                    _showBuckets(_result)
+                }
+            });
+            $("#est").bind("click", function(e) {
+                $("#logInf").children().each(function(){
+                    $(this).remove();
+                })
+                var _cx = e.offsetX;
+                var _cy = e.offsetY;
+                var gridX = Math.floor(_cx / 20);
+                var gridY = Math.floor(_cy / 20);
+                var qs1 = "grid[0] ==" + gridX + " && grid[1] ==" + gridY;
+                //console.log(qs1);
+                if (!!mgr) {
+                    //console.log(qs1)
+                    _result1 = mgr.search("bucketInf", qs1)
+                    var _fn = function(name, obj) {
+                        var _type = Object.prototype.toString.call(obj);
+                        var result;
+                        //console.log(name)
+                        //console.log(_type)
+                        switch (_type) {
+                            case ("[object Object]"):
+                            case ("[object Array]"):
+                                //console.log(name)
+                                var _tmpUL = $("<ul>");
+                                for (var i in obj) {
+                                    if (obj.hasOwnProperty(i)) {
+                                        _tmpUL.append(arguments.callee(i, obj[i]));
+                                    }
+                                }
+                                var _tmpDesc = $("<span>" + name + "</span>");
+                                result = $("<li>").append(_tmpDesc).append(_tmpUL);
+                                break;
+                            default:
+                                //console.log(obj)
+                                result = $("<li>").append("<span>" + name + "：" + obj + "</span>");
+                                break;
+                        }
+                        return result;
+                    }
+                    _showBuckets(undefined, {rgb: [255, 255, 255]});
+                    if (_result1.length) {
+                        _showBuckets(_result1, {notClear: true})
+                        var r1Len = _result1.length
+                        for (var i = 0; i < r1Len; i++) {
+                            var _tmpUL = $("<ul>");
+                            var _r1i = _result1[i];
+                            for (var j in _r1i) {
+                                _tmpUL.append(_fn(j, _r1i[j]));
+                            }
+                            var _tmpDesc = $("<span>第" + (i + 1) + "個</span>");
+                            var _tmpLi = $("<li>").append(_tmpDesc).append(_tmpUL);
+                            $("#logInf").append(_tmpLi);
+                        }
+                        $("#logInf").treeview();
+                        var qs2 = "((grid[0] -" + gridX + ") * (grid[1] -" + gridY + ") == 0)";
+                    }
+                    //console.log(_result1)
+                }
+            })
+        };
+    </script>
+</body>
+</html>
