@@ -424,8 +424,6 @@
             token = token.replace(/[\s]*$/g, "")
             #console.log(token)
             for _datai, i in _data
-                #if (_datai.grid[0] == 10 && _datai.grid[1] == 10)
-                #    console.log("=== check start ===")
                 _subResult = exeConds(_datai, token, _cond)
                 if (!(/^Boolean/).test(typeDef(_subResult)))
                     _result.push(_subResult)

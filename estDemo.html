@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="http://api.urmap.com/udraw/udraw.css" />
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="http://jquery.bassistance.de/treeview/jquery.treeview.js"></script>
-    <script type="text/javascript" src="/analysis.js"></script>
+    <script type="text/javascript" src="src/analysis.js"></script>
 
     <!--script type='text/javascript' src="http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js"></script-->
     <link rel="stylesheet" href="http://jquery.bassistance.de/treeview/jquery.treeview.css" />
@@ -177,7 +177,7 @@
         window.onload = function(){
             $("#pushdata").bind("click", function() {
                 _init();
-                mgr = (!mgr) ? (world({"data":dataIn})) : (mgr.reset(), mgr.insert(_dataIn));
+                mgr = (!mgr) ? (world({"data":_dataIn})) : (mgr.reset(), mgr.insert(_dataIn));
                 _drawOriData();
             });
             $("#buckets").bind("click", function() {
@@ -190,7 +190,8 @@
                 _scopeVal = _scope.val()
                 if (!!mgr) {
                     _result = mgr.search(_scopeVal, _condVal)
-                    _showBuckets(_result)
+                    _showBuckets(undefined, {rgb: [255, 255, 255]});
+                    _showBuckets(_result, {notClear: true})
                 }
             });
             $("#est").bind("click", function(e) {
@@ -201,8 +202,7 @@
                 var _cy = e.offsetY;
                 var gridX = Math.floor(_cx / 20);
                 var gridY = Math.floor(_cy / 20);
-                var qs1 = "grid[0] ==" + gridX + " && grid[1] ==" + gridY;
-                //console.log(qs1);
+                var qs1 = "grid[0] == " + gridX + " && grid[1] == " + gridY;
                 if (!!mgr) {
                     //console.log(qs1)
                     _result1 = mgr.search("bucketInf", qs1)
@@ -232,6 +232,7 @@
                         return result;
                     }
                     _showBuckets(undefined, {rgb: [255, 255, 255]});
+                    //console.log(_result1)
                     if (_result1.length) {
                         _showBuckets(_result1, {notClear: true})
                         var r1Len = _result1.length
