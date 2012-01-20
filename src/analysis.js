@@ -441,7 +441,7 @@
 
   lv = lv.join();
 
-  symMap = ["* 0", "/ 1", "% 2", "+ 3", "- 4", "< 5", "<=6", "==7", ">=8", "> 9", "!=a", "! b", "&&c", "||d", "[ e"];
+  symMap = ["* 0", "/ 1", "% 2", "+ 3", "- 4", "< 5", "<=6", "==7", "> 9", ">=8", "!=a", "! b", "&&c", "||d", "[ e"];
 
   symMap = symMap.join();
 
@@ -498,7 +498,7 @@
             while (_opstack.length) {
               _x = _opstack.pop();
               if (_x === "(") {
-                if (rsWord.indexOf(_opstack[_opstack.length - 1].split(".")[0]) > -1) {
+                if (_opstack[_opstack.length - 1].indexOf(".") > 0 && rsWord.indexOf(_opstack[_opstack.length - 1].split(".")[0]) > -1) {
                   _x = _opstack.pop();
                   _posfix.push(_x);
                 }
@@ -520,8 +520,8 @@
             break;
           case /[\+\-\*\/\!\%\&\|\>\=\<]+/g.test(condi):
           case rsWord.indexOf(condi.split(".")[0]) > -1:
-            _idxx = lv.indexOf(condi) > -1 ? lv.indexOf(condi) > -1 : 0.;
-            _lvx = parseInt(lv.slice(_idxx + 2, _idxx + 3));
+            _idxx = lv.indexOf(condi);
+            _lvx = _idxx > -1 ? parseInt(lv.slice(_idxx + 2, _idxx + 3)) : -1.;
             y = _opstack[_opstack.length - 1];
             _idxy = lv.indexOf(y);
             _lvy = _idxy > -1 ? parseInt(lv.slice(_idxy + 2, _idxy + 3)) : -1.;
@@ -556,12 +556,8 @@
       _x = _opstack.pop();
       if (_x !== "(") _posfix.push(_x);
     }
-    console.log(_posfix.join(" "));
-    return false;
     anayName = function(_data, name, token) {
       var nsp, _result;
-      console.log("------- in anay -------");
-      console.log(name);
       nsp = true;
       /^String/g.test(typeDef(name)) && (nsp = false);
       _result = /^\d[\d]*.*[\d]*$/g.test(name) || nsp ? name : name.split(".");
@@ -580,14 +576,11 @@
       _posi = _posfix[i];
       if (!/^String/g.test(typeDef(_posi))) continue;
       if ((/[\+\-\*\/\!\%\&\|\>\=\<\[]+/g.test(_posi)) || (rsWord.indexOf(_posi.split(".")[0]) > -1)) {
-        console.log(_posfix.join());
         val1 = anayName(_data, _posfix[i - 1], token);
         val2 = anayName(_data, _posfix[i - 2], token);
         symIdx = symMap.indexOf(_posi);
         symIdx = parseInt(symMap.slice(symIdx + 2, symIdx + 3), 16);
         fn = symFn[symIdx];
-        console.log("==========================");
-        console.log(i + "：" + _posi);
         switch (true) {
           case symIdx === 11:
             _result = fn(val1);
@@ -598,7 +591,6 @@
             _posfix.splice(i - 1, 2, _result);
             break;
           case rsWord.indexOf(_posi.split(".")[0]) > -1:
-            console.log("in reserve word");
             fn = anayName(_data, _posi, token);
             fnLen = fn.length;
             args = [];
@@ -606,8 +598,6 @@
               args[fnLen - 1] = /^String/g.test(typeDef(_posfix[i - fnLen])) ? _posfix[i - fnLen].replace(",", "") : _posfix[i - fnLen];
               fnLen--;
             }
-            console.log(_posfix.join());
-            console.log(args);
             _result = fn.apply(this, args);
             _posfix.splice(i - fn.length, fn.length + 1, _result);
             break;
@@ -620,7 +610,6 @@
         if (count > 1000) break;
       }
     }
-    console.log(_posfix);
     _result = _posfix[0] ? _data : false;
     return _result;
   };
@@ -647,7 +636,6 @@
       _cond = _cond.replace(/[\s]+/g, " ");
       _cond = _cond.replace(/^[\s]*/g, "");
       _cond = _cond.replace(/[\s]*$/g, "");
-      console.log(_cond);
       token = _cond;
       token = token.replace(/[^a-zA-Z_][\d\+\-\*\/\!\%\&\=\|\[\,\]\<\>]+/g, " ");
       token = token.replace(/[\(\)]+/g, " ");
@@ -658,7 +646,6 @@
         _datai = _data[i];
         _subResult = exeConds(_datai, token, _cond);
         if (!/^Boolean/.test(typeDef(_subResult))) _result.push(_subResult);
-        break;
       }
     }
     return _result;

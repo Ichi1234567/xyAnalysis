@@ -201,7 +201,7 @@
     symMap = [
         "* 0", "/ 1", "% 2",
         "+ 3", "- 4",
-        "< 5", "<=6", "==7", ">=8", "> 9", "!=a"
+        "< 5", "<=6", "==7", "> 9", ">=8", "!=a"
         "! b",
         "&&c",
         "||d",
@@ -260,7 +260,7 @@
                         while (_opstack.length)
                             _x = _opstack.pop()
                             if (_x == "(")
-                                if (rsWord.indexOf(_opstack[_opstack.length - 1].split(".")[0]) > -1)
+                                if (_opstack[_opstack.length - 1].indexOf(".") > 0 &&rsWord.indexOf(_opstack[_opstack.length - 1].split(".")[0]) > -1)
                                     _x = _opstack.pop()
                                     _posfix.push(_x)
                                 break
@@ -279,13 +279,13 @@
                         _posfix.push(condi)
                     when ((/[\+\-\*\/\!\%\&\|\>\=\<]+/g).test(condi)), (rsWord.indexOf(condi.split(".")[0]) > -1)
                         #console.log("--- in " + condi + " ---")
-                        _idxx = if (lv.indexOf(condi) > -1) then (lv.indexOf(condi) > -1) else (0)
-                        _lvx = parseInt(lv.slice((_idxx + 2), (_idxx + 3)))
+                        _idxx = lv.indexOf(condi)
+                        _lvx = if (_idxx > -1) then (parseInt(lv.slice((_idxx + 2), (_idxx + 3)))) else (-1)
                         y = _opstack[_opstack.length - 1]
                         _idxy = lv.indexOf(y)
                         _lvy = if (_idxy > -1) then parseInt(lv.slice((_idxy + 2), (_idxy + 3))) else (-1)
                         #console.log(lv)
-                        #console.log("idxx：" + lv.indexOf(condi))
+                        #console.log("idxx：" + lv.indexOf(condi) + lv.slice((_idxx + 2), (_idxx + 2)))
                         #console.log(y)
                         #console.log("lv1：" + _lvx)
                         #console.log("lv2：" + _lvy)
@@ -319,11 +319,10 @@
             _x = _opstack.pop()
             if (_x != "(")
                 _posfix.push(_x)
-        console.log(_posfix.join(" "))
-        return false
+        #console.log(_posfix.join(" "))
         anayName = (_data, name, token) ->
-            console.log("------- in anay -------")
-            console.log(name)
+            #console.log("------- in anay -------")
+            #console.log(name)
             nsp = true
             ((/^String/g).test(typeDef(name)) && (nsp = false))
             _result = if ((/^\d[\d]*.*[\d]*$/g).test(name) || nsp) then (name) else name.split(".")
@@ -341,15 +340,15 @@
             if (!(/^String/g).test(typeDef(_posi)))
                 continue
             if (((/[\+\-\*\/\!\%\&\|\>\=\<\[]+/g).test(_posi)) || (rsWord.indexOf(_posi.split(".")[0]) > -1))
-                console.log(_posfix.join())
+                #console.log(_posfix.join())
                 val1 = anayName(_data, _posfix[(i - 1)], token)
                 val2 = anayName(_data, _posfix[(i - 2)], token)
                 symIdx = symMap.indexOf(_posi)
                 symIdx = parseInt(symMap.slice((symIdx + 2), (symIdx + 3)), 16)
                 fn = symFn[symIdx]
             
-                console.log("==========================")
-                console.log(i + "："+ _posi)
+                #console.log("==========================")
+                #console.log(i + "："+ _posi)
                 #console.log(fn)
                 #console.log(val1)
                 #console.log(val2)
@@ -364,15 +363,15 @@
                         _posfix.splice((i - 1), 2, _result)
                     # reserve word
                     when (rsWord.indexOf(_posi.split(".")[0]) > -1)
-                        console.log("in reserve word")
+                        #console.log("in reserve word")
                         fn = anayName(_data, _posi, token)
                         fnLen = fn.length
                         args = []
                         while (fnLen)
                             args[fnLen - 1] = if ((/^String/g).test(typeDef(_posfix[i - fnLen]))) then ((_posfix[i - fnLen]).replace(",", "")) else (_posfix[i - fnLen])
                             fnLen--
-                        console.log(_posfix.join())
-                        console.log(args)
+                        #console.log(_posfix.join())
+                        #console.log(args)
                         _result = fn.apply(this, args)
                         _posfix.splice((i - fn.length), (fn.length + 1), _result)
                     else
@@ -384,7 +383,7 @@
                 count++
                 if (count > 1000)
                     break
-        console.log(_posfix)
+        #console.log(_posfix)
 
         _result = if (_posfix[0]) then (_data) else (false)
         _result
@@ -415,7 +414,7 @@
             _cond = _cond.replace(/[\s]+/g, " ")
             _cond = _cond.replace(/^[\s]*/g, "")
             _cond = _cond.replace(/[\s]*$/g, "")
-            console.log(_cond)
+            #console.log(_cond)
 
             token = _cond
             token = token.replace(/[^a-zA-Z_][\d\+\-\*\/\!\%\&\=\|\[\,\]\<\>]+/g, " ")
@@ -425,10 +424,12 @@
             token = token.replace(/[\s]*$/g, "")
             #console.log(token)
             for _datai, i in _data
+                #if (_datai.grid[0] == 10 && _datai.grid[1] == 10)
+                #    console.log("=== check start ===")
                 _subResult = exeConds(_datai, token, _cond)
                 if (!(/^Boolean/).test(typeDef(_subResult)))
                     _result.push(_subResult)
-                break
+                #break
         _result
 
     # OVERLAY_MANAGER END
