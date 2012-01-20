@@ -198,13 +198,15 @@
                 $("#logInf").children().each(function(){
                     $(this).remove();
                 })
-                var _cx = e.offsetX;
-                var _cy = e.offsetY;
+                //console.log(e);
+                //console.log($(this))
+                var _cx = (typeof e.offsetX == "undefined") ? (e.clientX - this.offsetLeft) : (e.offsetX);
+                var _cy = (typeof e.offsetY == "undefined") ? (e.clientY - this.offsetTop) : (e.offsetY);
                 var gridX = Math.floor(_cx / 20);
                 var gridY = Math.floor(_cy / 20);
                 var qs1 = "grid[0] == " + gridX + " && grid[1] == " + gridY;
                 if (!!mgr) {
-                    //console.log(qs1)
+                    console.log(qs1)
                     _result1 = mgr.search("bucketInf", qs1)
                     var _fn = function(name, obj) {
                         var _type = Object.prototype.toString.call(obj);
@@ -232,7 +234,7 @@
                         return result;
                     }
                     _showBuckets(undefined, {rgb: [255, 255, 255]});
-                    //console.log(_result1)
+                    console.log(_result1)
                     if (_result1.length) {
                         _showBuckets(_result1, {notClear: true})
                         var r1Len = _result1.length
